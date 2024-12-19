@@ -70,6 +70,29 @@
             transform: scale(1.1);
         }
 
+        .upload {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .upload button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .upload button:hover {
+            background-color: #0056b3;
+        }
+
         .animation {
             animation: slideIn 1s;
         }
@@ -87,7 +110,13 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div id="uploadScreen" class="upload">
+        <h2>Select an Album to Sort</h2>
+        <input type="file" id="albumInput" multiple accept="image/*">
+        <button onclick="startSorting()">Start Sorting</button>
+    </div>
+
+    <div id="sortingScreen" class="container" style="display: none;">
         <div id="photo" class="animation"></div>
         <div class="buttons">
             <button class="discard" onclick="discardPhoto()">Discard</button>
@@ -97,16 +126,24 @@
 
     <script>
         const photoContainer = document.getElementById('photo');
+        const uploadScreen = document.getElementById('uploadScreen');
+        const sortingScreen = document.getElementById('sortingScreen');
+        const albumInput = document.getElementById('albumInput');
 
-        let photos = [
-            'photo1.jpg',
-            'photo2.jpg',
-            'photo3.jpg',
-            'photo4.jpg', // Replace with actual image paths
-            'photo5.jpg'
-        ];
+        let photos = [];
         let currentIndex = 0;
-        
+
+        function startSorting() {
+            if (albumInput.files.length > 0) {
+                photos = Array.from(albumInput.files).map(file => URL.createObjectURL(file));
+                uploadScreen.style.display = 'none';
+                sortingScreen.style.display = 'flex';
+                updatePhoto();
+            } else {
+                alert('Please select at least one photo to start sorting.');
+            }
+        }
+
         function updatePhoto() {
             if (currentIndex < photos.length) {
                 photoContainer.style.backgroundImage = `url(${photos[currentIndex]})`;
@@ -130,9 +167,6 @@
             currentIndex++;
             updatePhoto();
         }
-
-        // Initial load
-        updatePhoto();
     </script>
 </body>
 </html>
