@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Photo Sorter</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -157,7 +159,8 @@
 
     <div id="allDone" style="display: none;">
         <h2>Sorting Complete!</h2>
-        <p>All photos have been sorted. You can review your folders now.</p>
+        <p>All photos have been sorted. You can download your kept photos as a ZIP file.</p>
+        <button onclick="downloadKeptPhotos()">Download Kept Photos</button>
         <button onclick="restartSorting()">Back to Start</button>
     </div>
 
@@ -178,7 +181,7 @@
                 photos = Array.from(albumInput.files).map(file => ({
                     url: URL.createObjectURL(file),
                     name: file.name,
-                    path: file.webkitRelativePath
+                    file: file
                 }));
                 currentIndex = 0;
                 keptPhotos.length = 0;
@@ -205,13 +208,11 @@
 
         function keepPhoto() {
             keptPhotos.push(photos[currentIndex]);
-            console.log(`Kept: ${photos[currentIndex].path}`);
             animateAndProceed('swipe-right');
         }
 
         function discardPhoto() {
             discardedPhotos.push(photos[currentIndex]);
-            console.log(`Discarded: ${photos[currentIndex].path}`);
             animateAndProceed('swipe-left');
         }
 
@@ -221,6 +222,16 @@
                 currentIndex++;
                 updatePhoto();
             }, 500);
+        }
+
+        function downloadKeptPhotos() {
+            const zip = new JSZip();
+            keptPhotos.forEach(photo => {
+                zip.file(photo.name, photo.file);
+            });
+            zip.generateAsync({ type: 'blob' }).then(content => {
+                saveAs(content, 'kept_photos.zip');
+            });
         }
 
         function restartSorting() {
