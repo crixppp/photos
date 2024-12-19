@@ -140,7 +140,7 @@
     </style>
 </head>
 <body>
-    <div id="uploadScreen" class="upload">
+    <div id="uploadScreen" class="upload" style="display: flex;">
         <h2>Select an Album to Sort</h2>
         <input type="file" id="albumInput" webkitdirectory directory multiple accept="image/*">
         <button onclick="startSorting()">Start Sorting</button>
@@ -154,7 +154,7 @@
         </div>
     </div>
 
-    <div id="allDone">
+    <div id="allDone" style="display: none;">
         <h2>Sorting Complete!</h2>
         <p>All photos have been sorted. You can review your folders now.</p>
         <button onclick="restartSorting()">Back to Start</button>
@@ -234,7 +234,9 @@
         });
 
         // Initial load
-        updatePhoto();
+        uploadScreen.style.display = 'flex';
+        sortingScreen.style.display = 'none';
+        allDoneScreen.style.display = 'none';
     </script>
 </body>
 </html>
