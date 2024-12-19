@@ -33,6 +33,7 @@
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
             transition: transform 0.3s ease-in-out;
+            position: relative;
         }
 
         .buttons {
@@ -93,18 +94,31 @@
             background-color: #0056b3;
         }
 
-        .animation {
-            animation: slideIn 1s;
+        #photo.swipe-left {
+            transform: translateX(-150%) rotate(-15deg);
+            opacity: 0;
         }
 
-        @keyframes slideIn {
+        #photo.swipe-right {
+            transform: translateX(150%) rotate(15deg);
+            opacity: 0;
+        }
+
+        #allDone {
+            text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 1s;
+        }
+
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: scale(0.8);
             }
             to {
                 opacity: 1;
-                transform: scale(1);
             }
         }
     </style>
@@ -112,7 +126,7 @@
 <body>
     <div id="uploadScreen" class="upload">
         <h2>Select an Album to Sort</h2>
-        <input type="file" id="albumInput" multiple accept="image/*">
+        <input type="file" id="albumInput" webkitdirectory directory multiple accept="image/*">
         <button onclick="startSorting()">Start Sorting</button>
     </div>
 
@@ -124,49 +138,74 @@
         </div>
     </div>
 
+    <div id="allDone" style="display: none;">
+        <h2>Sorting Complete!</h2>
+        <p>All photos have been sorted. You can review your folders now.</p>
+    </div>
+
     <script>
         const photoContainer = document.getElementById('photo');
         const uploadScreen = document.getElementById('uploadScreen');
         const sortingScreen = document.getElementById('sortingScreen');
         const albumInput = document.getElementById('albumInput');
+        const allDoneScreen = document.getElementById('allDone');
 
         let photos = [];
         let currentIndex = 0;
 
         function startSorting() {
             if (albumInput.files.length > 0) {
-                photos = Array.from(albumInput.files).map(file => URL.createObjectURL(file));
+                photos = Array.from(albumInput.files).map(file => ({
+                    url: URL.createObjectURL(file),
+                    name: file.name,
+                    path: file.webkitRelativePath
+                }));
                 uploadScreen.style.display = 'none';
                 sortingScreen.style.display = 'flex';
                 updatePhoto();
             } else {
-                alert('Please select at least one photo to start sorting.');
+                alert('Please select a folder with photos to start sorting.');
             }
         }
 
         function updatePhoto() {
             if (currentIndex < photos.length) {
-                photoContainer.style.backgroundImage = `url(${photos[currentIndex]})`;
+                photoContainer.style.backgroundImage = `url(${photos[currentIndex].url})`;
+                photoContainer.classList.remove('swipe-left', 'swipe-right');
             } else {
-                photoContainer.style.backgroundImage = 'none';
-                photoContainer.innerHTML = '<h2>All done!</h2>';
-                document.querySelector('.buttons').style.display = 'none';
+                sortingScreen.style.display = 'none';
+                allDoneScreen.style.display = 'block';
             }
         }
 
         function keepPhoto() {
-            // Save to "keep" folder logic
-            console.log(`Keeping: ${photos[currentIndex]}`);
-            currentIndex++;
-            updatePhoto();
+            console.log(`Keeping: ${photos[currentIndex].path}`);
+            photoContainer.classList.add('swipe-right');
+            setTimeout(() => {
+                currentIndex++;
+                updatePhoto();
+            }, 300);
         }
 
         function discardPhoto() {
-            // Move to bin logic
-            console.log(`Discarding: ${photos[currentIndex]}`);
-            currentIndex++;
-            updatePhoto();
+            console.log(`Discarding: ${photos[currentIndex].path}`);
+            photoContainer.classList.add('swipe-left');
+            setTimeout(() => {
+                currentIndex++;
+                updatePhoto();
+            }, 300);
         }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'ArrowLeft') {
+                discardPhoto();
+            } else if (event.key === 'ArrowRight') {
+                keepPhoto();
+            }
+        });
+
+        // Initial load
+        updatePhoto();
     </script>
 </body>
 </html>
