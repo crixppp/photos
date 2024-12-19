@@ -32,8 +32,8 @@
             background-position: center;
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease-in-out;
-            position: relative;
+            transition: transform 0.5s ease-in-out, opacity 0.5s ease-in-out;
+            position: absolute;
         }
 
         .buttons {
@@ -113,6 +113,21 @@
             animation: fadeIn 1s;
         }
 
+        #allDone button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        #allDone button:hover {
+            background-color: #0056b3;
+        }
+
         @keyframes fadeIn {
             from {
                 opacity: 0;
@@ -131,7 +146,7 @@
     </div>
 
     <div id="sortingScreen" class="container" style="display: none;">
-        <div id="photo" class="animation"></div>
+        <div id="photo"></div>
         <div class="buttons">
             <button class="discard" onclick="discardPhoto()">Discard</button>
             <button class="keep" onclick="keepPhoto()">Keep</button>
@@ -141,6 +156,7 @@
     <div id="allDone" style="display: none;">
         <h2>Sorting Complete!</h2>
         <p>All photos have been sorted. You can review your folders now.</p>
+        <button onclick="restartSorting()">Back to Start</button>
     </div>
 
     <script>
@@ -152,6 +168,8 @@
 
         let photos = [];
         let currentIndex = 0;
+        const keptPhotos = [];
+        const discardedPhotos = [];
 
         function startSorting() {
             if (albumInput.files.length > 0) {
@@ -160,6 +178,9 @@
                     name: file.name,
                     path: file.webkitRelativePath
                 }));
+                currentIndex = 0;
+                keptPhotos.length = 0;
+                discardedPhotos.length = 0;
                 uploadScreen.style.display = 'none';
                 sortingScreen.style.display = 'flex';
                 updatePhoto();
@@ -170,7 +191,8 @@
 
         function updatePhoto() {
             if (currentIndex < photos.length) {
-                photoContainer.style.backgroundImage = `url(${photos[currentIndex].url})`;
+                const photoData = photos[currentIndex];
+                photoContainer.style.backgroundImage = `url(${photoData.url})`;
                 photoContainer.classList.remove('swipe-left', 'swipe-right');
             } else {
                 sortingScreen.style.display = 'none';
@@ -179,21 +201,26 @@
         }
 
         function keepPhoto() {
-            console.log(`Keeping: ${photos[currentIndex].path}`);
-            photoContainer.classList.add('swipe-right');
-            setTimeout(() => {
-                currentIndex++;
-                updatePhoto();
-            }, 300);
+            keptPhotos.push(photos[currentIndex]);
+            animateAndProceed('swipe-right');
         }
 
         function discardPhoto() {
-            console.log(`Discarding: ${photos[currentIndex].path}`);
-            photoContainer.classList.add('swipe-left');
+            discardedPhotos.push(photos[currentIndex]);
+            animateAndProceed('swipe-left');
+        }
+
+        function animateAndProceed(animationClass) {
+            photoContainer.classList.add(animationClass);
             setTimeout(() => {
                 currentIndex++;
                 updatePhoto();
-            }, 300);
+            }, 500);
+        }
+
+        function restartSorting() {
+            allDoneScreen.style.display = 'none';
+            uploadScreen.style.display = 'flex';
         }
 
         document.addEventListener('keydown', (event) => {
